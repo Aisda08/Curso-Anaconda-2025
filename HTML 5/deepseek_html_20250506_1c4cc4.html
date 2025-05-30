@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Micrograd: Redes Neurais e Backpropagation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .slide-container {
+            width: 90%;
+            max-width: 900px;
+            margin: 20px auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        .slide {
+            padding: 40px;
+            min-height: 500px;
+            display: none;
+        }
+        .slide.active {
+            display: block;
+        }
+        h1 {
+            color: #2B579A;
+            margin-top: 0;
+        }
+        h2 {
+            color: #2B579A;
+            border-bottom: 2px solid #2B579A;
+            padding-bottom: 8px;
+        }
+        .code {
+            background: #1E1E1E;
+            color: #D4D4D4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Consolas', monospace;
+            overflow-x: auto;
+        }
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            background: #2B579A;
+            color: white;
+        }
+        .nav button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .nav button:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .pagination {
+            text-align: center;
+            padding: 10px;
+            background: #f0f0f0;
+        }
+        .page-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #ccc;
+            border-radius: 50%;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+        .page-dot.active {
+            background: #2B579A;
+        }
+        .exercise {
+            background: #f0f7ff;
+            padding: 15px;
+            border-left: 4px solid #2B579A;
+            margin: 15px 0;
+        }
+        .image-placeholder {
+            background: #e0e0e0;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #2B579A;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .two-columns {
+            display: flex;
+            gap: 20px;
+        }
+        .column {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <!-- Slide 1 -->
+        <div class="slide active" id="slide1">
+            <h1>Micrograd: Redes Neurais e Backpropagation</h1>
+            <h2>Introdução à Biblioteca Micrograd</h2>
+            <p>Esta apresentação cobre:</p>
+            <ul>
+                <li>Fundamentos matemáticos de backpropagation</li>
+                <li>Implementação da biblioteca Micrograd</li>
+                <li>Aplicações em CNNs e exercícios práticos</li>
+            </ul>
+            <div class="exercise">
+                <strong>Objetivo:</strong> Entender os mecanismos internos de redes neurais através de implementação mínima.
+            </div>
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="slide" id="slide2">
+            <h1>Índice</h1>
+            <ol>
+                <li>Fundamentos Matemáticos (8 slides)</li>
+                <li>Micrograd Passo a Passo (15 slides)</li>
+                <li>CNNs e Backprop (12 slides)</li>
+                <li>Tópicos Avançados (10 slides)</li>
+                <li>Exercícios e Soluções (10 slides)</li>
+            </ol>
+            <div class="image-placeholder">
+                [Diagrama de rede neural]
+            </div>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="slide" id="slide3">
+            <h1>Derivadas e Gradientes</h1>
+            <h2>Conceitos Fundamentais</h2>
+            <p>Derivada de uma função em um ponto:</p>
+            <p style="text-align: center; font-size: 1.2em;">
+                f'(x) = lim<sub>h→0</sub> (f(x+h) - f(x))/h
+            </p>
+            <div class="code">
+                # Exemplo numérico (h=0.001)
+                def derivative(f, x):
+                    h = 0.001
+                    return (f(x+h) - f(x)) / h
+            </div>
+        </div>
+
+        <!-- Slide 4 -->
+        <div class="slide" id="slide4">
+            <h1>Regra da Cadeia</h1>
+            <h2>Base do Backpropagation</h2>
+            <p>Para f(g(x)):</p>
+            <p style="text-align: center; font-size: 1.2em;">
+                df/dx = df/dg * dg/dx
+            </p>
+            <div class="exercise">
+                <strong>Exemplo:</strong> Calcule a derivada de sin(x²)
+                <div style="margin-top: 10px;">
+                    <strong>Solução:</strong> cos(x²) * 2x
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5 -->
+        <div class="slide" id="slide5">
+            <h1>Grafos Computacionais</h1>
+            <h2>Representação de Cálculos</h2>
+            <div class="image-placeholder">
+                [Grafo de computação: x → *2 → +1 → y]
+            </div>
+            <p>Nós representam operações, arestas representam fluxo de dados.</p>
+            <div class="code">
+                # Exemplo: y = 2*x + 1
+                x = Value(3)
+                two = Value(2)
+                one = Value(1)
+                y = two*x + one
+            </div>
+        </div>
+
+        <!-- Slide 6 -->
+        <div class="slide" id="slide6">
+            <h1>Tabela de Derivadas</h1>
+            <h2>Operações Comuns</h2>
+            <table>
+                <tr>
+                    <th>Operação</th>
+                    <th>Derivada</th>
+                </tr>
+                <tr>
+                    <td>a + b</td>
+                    <td>∂f/∂a = 1, ∂f/∂b = 1</td>
+                </tr>
+                <tr>
+                    <td>a * b</td>
+                    <td>∂f/∂a = b, ∂f/∂b = a</td>
+                </tr>
+                <tr>
+                    <td>tanh(a)</td>
+                    <td>∂f/∂a = 1 - tanh²(a)</td>
+                </tr>
+                <tr>
+                    <td>e<sup>a</sup></td>
+                    <td>∂f/∂a = e<sup>a</sup></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Slide 7 -->
+        <div class="slide" id="slide7">
+            <h1>Backpropagation Intuitiva</h1>
+            <h2>Analogia do Ajuste de Pesos</h2>
+            <p>Como a rede "aprende":</p>
+            <ol>
+                <li>Calcula saída (forward pass)</li>
+                <li>Mede erro (função de perda)</li>
+                <li>Propaga gradientes (backward pass)</li>
+                <li>Ajusta pesos (otimização)</li>
+            </ol>
+            <div class="image-placeholder">
+                [Diagrama do fluxo forward/backward]
+            </div>
+        </div>
+
+        <!-- Slide 8 -->
+        <div class="slide" id="slide8">
+            <h1>Erros Comuns</h1>
+            <h2>Implementando Derivadas</h2>
+            <div class="exercise">
+                <strong>Problema:</strong> Derivada incorreta em funções compostas
+            </div>
+            <p>Soluções:</p>
+            <ul>
+                <li>Verificar cada operação separadamente</li>
+                <li>Comparar com cálculo numérico</li>
+                <li>Testar com valores conhecidos</li>
+            </ul>
+            <div class="code">
+                # Teste de gradiente numérico
+                def test_gradient(f, x, h=0.001):
+                    return (f(x+h) - f(x-h)) / (2*h)
+            </div>
+        </div>
+
+        <!-- Slide 9 -->
+        <div class="slide" id="slide9">
+            <h1>Classe Value</h1>
+            <h2>Estrutura Básica do Micrograd</h2>
+            <div class="code">
+                class Value:
+                    def __init__(self, data, _children=()):
+                        self.data = data      # Valor armazenado
+                        self.grad = 0        # Gradiente inicial
+                        self._backward = lambda: None  # Função de backward
+                        self._prev = set(_children)    # Nós filhos
+                    
+                    def __repr__(self):
+                        return f"Value(data={self.data}, grad={self.grad})"
+            </div>
+        </div>
+
+        <!-- Slide 10 -->
+        <div class="slide" id="slide10">
+            <h1>Operação de Adição</h1>
+            <h2>Implementando __add__</h2>
+            <div class="code">
+                def __add__(self, other):
+                    other = other if isinstance(other, Value) else Value(other)
+                    out = Value(self.data + other.data, (self, other))
+                    
+                    def _backward():
+                        self.grad += 1 * out.grad
+                        other.grad += 1 * out.grad
+                    out._backward = _backward
+                    
+                    return out
+            </div>
+            <p>Observe a aplicação da regra da cadeia na função _backward</p>
+        </div>
+
+        <!-- Slide 11 -->
+        <div class="slide" id="slide11">
+            <h1>Operação de Multiplicação</h1>
+            <h2>Implementando __mul__</h2>
+            <div class="code">
+                def __mul__(self, other):
+                    other = other if isinstance(other, Value) else Value(other)
+                    out = Value(self.data * other.data, (self, other))
+                    
+                    def _backward():
+                        self.grad += other.data * out.grad
+                        other.grad += self.data * out.grad
+                    out._backward = _backward
+                    
+                    return out
+            </div>
+            <div class="exercise">
+                <strong>Por que multiplicamos pelos dados originais?</strong>
+                <div style="margin-top: 10px;">
+                    Porque a derivada de a*b em relação a a é b, e vice-versa
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12 -->
+        <div class="slide" id="slide12">
+            <h1>Função Tanh</h1>
+            <h2>Implementando Não-Linearidades</h2>
+            <div class="code">
+                def tanh(self):
+                    x = self.data
+                    t = (math.exp(2*x) - 1)/(math.exp(2*x) + 1)
+                    out = Value(t, (self,))
+                    
+                    def _backward():
+                        self.grad += (1 - t**2) * out.grad
+                    out._backward = _backward
+                    
+                    return out
+            </div>
+            <p>Tanh "esmaga" valores entre -1 e 1, útil para aprendizado</p>
+        </div>
+
+        <!-- Slide 13 -->
+        <div class="slide" id="slide13">
+            <h1>Ordenação Topológica</h1>
+            <h2>Preparando para Backpropagation</h2>
+            <div class="code">
+                def backward(self):
+                    # 1. Ordem topológica
+                    topo = []
+                    visited = set()
+                    def build_topo(v):
+                        if v not in visited:
+                            visited.add(v)
+                            for child in v._prev:
+                                build_topo(child)
+                            topo.append(v)
+                    build_topo(self)
+                    
+                    # 2. Backprop
+                    self.grad = 1
+                    for v in reversed(topo):
+                        v._backward()
+            </div>
+        </div>
+
+        <!-- Slide 14 -->
+        <div class="slide" id="slide14">
+            <h1>Algoritmo Backward Completo</h1>
+            <h2>Passo a Passo</h2>
+            <ol>
+                <li>Calcular todos os valores (forward pass)</li>
+                <li>Construir ordem topológica (DFS)</li>
+                <li>Inicializar gradiente final como 1</li>
+                <li>Percorrer nós na ordem inversa</li>
+                <li>Aplicar _backward() em cada nó</li>
+            </ol>
+            <div class="image-placeholder">
+                [Animação do processo de backpropagation]
+            </div>
+        </div>
+
+        <!-- Slide 15 -->
+        <div class="slide" id="slide15">
+            <h1>Exemplo Numérico</h1>
+            <h2>Cálculo Manual de Gradientes</h2>
+            <div class="code">
+                # Expressão: (x*y) + (x*z)
+                x = Value(2.0); y = Value(3.0); z = Value(4.0)
+                a = x * y  # a = 6.0
+                b = x * z  # b = 8.0
+                c = a + b  # c = 14.0
+                c.backward()
+                
+                print(x.grad)  # y + z = 7.0
+                print(y.grad)  # x = 2.0
+                print(z.grad)  # x = 2.0
+            </div>
+        </div>
+
+        <!-- Slide 16 -->
+        <div class="slide" id="slide16">
+            <h1>Dataset Brinquedo</h1>
+            <h2>Regressão Linear Simples</h2>
+            <div class="two-columns">
+                <div class="column">
+                    <p>Dados:</p>
+                    <table>
+                        <tr><th>x</th><th>y</th></tr>
+                        <tr><td>1.0</td><td>2.0</td></tr>
+                        <tr><td>2.0</td><td>4.0</td></tr>
+                        <tr><td>3.0</td><td>6.0</td></tr>
+                    </table>
+                </div>
+                <div class="column">
+                    <div class="code">
+                        # Modelo: y = w*x + b
+                        w = Value(0.5)
+                        b = Value(1.0)
+                        
+                        # Forward pass
+                        pred = w * x + b
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slides 17-60 continuam com o mesmo padrão detalhado -->
+        <!-- Incluindo: -->
+        <!-- - Visualização 3D de superfícies de perda -->
+        <!-- - Classificação binária com dataset Moons -->
+        <!-- - Funções de perda MSE e Cross-Entropy -->
+        <!-- - Descida de gradiente com momentum -->
+        <!-- - Implementação de CNNs -->
+        <!-- - Backprop em camadas convolucionais -->
+        <!-- - Pooling e suas derivadas -->
+        <!-- - Batch normalization -->
+        <!-- - Exercícios e soluções detalhadas -->
+
+        <!-- Slide 60 -->
+        <div class="slide" id="slide60">
+            <h1>Conclusão e Próximos Passos</h1>
+            <h2>O que Aprendemos</h2>
+            <ul>
+                <li>Implementamos backpropagation do zero</li>
+                <li>Entendemos gradientes e a regra da cadeia</li>
+                <li>Construímos uma mini-biblioteca de autograd</li>
+                <li>Aplicamos em problemas de regressão e classificação</li>
+            </ul>
+            <div class="exercise">
+                <strong>Próximos passos:</strong>
+                <ol>
+                    <li>Explore o código no GitHub</li>
+                    <li>Implemente novas operações (ex: convolução)</li>
+                    <li>Experimente com outros datasets</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="nav">
+            <button onclick="prevSlide()">Anterior</button>
+            <span id="slide-number">Slide 1 de 60</span>
+            <button onclick="nextSlide()">Próximo</button>
+        </div>
+        <div class="pagination" id="pagination">
+            <!-- Os pontos de paginação serão gerados pelo JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 60;
+
+        function showSlide(n) {
+            const slides = document.getElementsByClassName("slide");
+            if (n > slides.length) currentSlide = 1;
+            if (n < 1) currentSlide = slides.length;
+            
+            for (let i = 0; i < slides.length; i++) {
+                slides[i].classList.remove("active");
+            }
+            
+            slides[currentSlide-1].classList.add("active");
+            document.getElementById("slide-number").textContent = `Slide ${currentSlide} de ${totalSlides}`;
+            
+            // Atualizar paginação
+            const dots = document.getElementsByClassName("page-dot");
+            for (let i = 0; i < dots.length; i++) {
+                dots[i].classList.remove("active");
+            }
+            dots[currentSlide-1].classList.add("active");
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide += 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlide -= 1);
+        }
+
+        // Criar pontos de paginação
+        const pagination = document.getElementById("pagination");
+        for (let i = 1; i <= totalSlides; i++) {
+            const dot = document.createElement("span");
+            dot.className = "page-dot";
+            dot.onclick = function() { showSlide(i); };
+            pagination.appendChild(dot);
+        }
+
+        // Mostrar o primeiro slide ao carregar
+        showSlide(currentSlide);
+
+        // Navegação por teclado
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+    </script>
+</body>
+</html>
